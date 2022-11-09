@@ -2,23 +2,18 @@ package com.starter.errorhandling.advisor;
 
 import java.time.LocalDateTime;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.starter.errorhandling.exception.BaseException;
 
 import lombok.Data;
 
-@ControllerAdvice(basePackages = "com.starter.errorhandling.controller")
-public class ErrorAdvicer extends ResponseEntityExceptionHandler {
+@ControllerAdvice
+public class ErrorAdvicer {
 
   @Value("${APP_TYPE}")
   private String serverType;
@@ -26,26 +21,13 @@ public class ErrorAdvicer extends ResponseEntityExceptionHandler {
   @Value("${app.version}")
   private String appVersion;
 
-  @ResponseBody
   @ExceptionHandler(BaseException.class)
-  public ResponseEntity<?> handleControllerException(HttpServletRequest request, Throwable ex) {
-    HttpStatus status = getStatus(request);
-
+  public ResponseEntity<ErrorResponse> handleBaseException(BaseException e) {
     ErrorResponse response = new ErrorResponse();
-    response.setStatus(status.value());
-    response.setServerType(serverType);
-    response.setVersion(appVersion);
-    response.setPath(request.getHeader("path"));
-    response.setMethod(request.getMethod());
-    response.setMessage(ex.getMessage());
+    response.setMessage(e.getMessage());
+    response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
 
-    return new ResponseEntity<>(response, status);
-  }
-
-  private HttpStatus getStatus(HttpServletRequest request) {
-    Integer code = (Integer) request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
-    HttpStatus status = HttpStatus.resolve(code);
-    return (status != null) ? status : HttpStatus.INTERNAL_SERVER_ERROR;
+    return new ResponseEntity<>(response, HttpStatus.EXPECTATION_FAILED);
   }
 
   @Data
