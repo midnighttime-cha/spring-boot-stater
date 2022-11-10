@@ -24,10 +24,12 @@ public class ErrorAdvicer {
   @ExceptionHandler(BaseException.class)
   public ResponseEntity<ErrorResponse> handleBaseException(BaseException e) {
     ErrorResponse response = new ErrorResponse();
-    response.setMessage(e.getMessage());
-    response.setStatus(HttpStatus.EXPECTATION_FAILED.value());
 
-    return new ResponseEntity<>(response, HttpStatus.EXPECTATION_FAILED);
+    response.setStatus(HttpStatus.BAD_REQUEST.value());
+    response.setServerType(serverType);
+    response.setMessage(e.getMessage());
+
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 
   @Data
